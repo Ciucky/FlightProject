@@ -53,20 +53,34 @@ def get_adjacent_directions(direction):
     return adjacent[direction]
 
 # Load the airports data
-airports_df = pd.read_csv('C:/Users/alexa/Documents/FlightProject/airports_large.csv')
+airports_df = pd.read_csv('airports_large.csv')
 
 # Define the origin and destination airport IATA codes
 origin_iata = "LGW"
 destination_iata = "DPS"
 
 # Find the origin and destination airports' coordinates
-origin_airport = airports_df.loc[airports_df['iata_code'] == origin_iata].iloc[0]
-destination_airport = airports_df.loc[airports_df['iata_code'] == destination_iata].iloc[0]
-origin_coords = (origin_airport['latitude_deg'], origin_airport['longitude_deg'])
-destination_coords = (destination_airport['latitude_deg'], destination_airport['longitude_deg'])
+# origin_airport = airports_df.loc[airports_df['iata_code'] == origin_iata].iloc[0]
+# destination_airport = airports_df.loc[airports_df['iata_code'] == destination_iata].iloc[0]
+
+# Find the origin and destination airports' ident
+origin_airport = airports_df.loc[airports_df['iata_code'] == origin_iata, 'ident'].iloc[0]
+destination_airport = airports_df.loc[airports_df['iata_code'] == destination_iata, 'ident'].iloc[0]
+
+# Find the coordinates for origin and destination airports
+# origin_coords = (origin_airport['latitude_deg'], origin_airport['longitude_deg'])
+# destination_coords = (destination_airport['latitude_deg'], destination_airport['longitude_deg'])
+
+origin_coords = airports_df.loc[airports_df['ident'] == origin_airport, ['latitude_deg', 'longitude_deg']].iloc[0]
+destination_coords = airports_df.loc[airports_df['ident'] == destination_airport, ['latitude_deg', 'longitude_deg']].iloc[0]
+
+
 
 # Calculate the direction of the destination airport from the origin
-destination_bearing = calculate_2d_bearing(origin_coords[0], origin_coords[1], destination_coords[0], destination_coords[1])
+# destination_bearing = calculate_2d_bearing(origin_coords[0], origin_coords[1], destination_coords[0], destination_coords[1])
+
+destination_bearing = calculate_2d_bearing(*origin_coords, *destination_coords)
+
 destination_direction = get_2d_direction(destination_bearing)
 adjacent_directions = get_adjacent_directions(destination_direction)
 
@@ -87,6 +101,7 @@ for _, airport in airports_df.iterrows():
                 'airport_name': airport['name'],
                 'municipality': airport['municipality'],
                 'iata_code': airport['iata_code'],
+                'ident':airport['ident'],
                 'direction_from_origin': direction
             })
 
@@ -94,7 +109,7 @@ for _, airport in airports_df.iterrows():
 filtered_airports_df = pd.DataFrame(filtered_csv_data)
 
 # Define the path for the new CSV file
-filtered_csv_file_path = 'C:/Users/alexa/Documents/FlightProject/airports_directions_from_origin.csv'
+filtered_csv_file_path = 'airports_directions_from_origin.csv'
 
 # Write the new DataFrame to a CSV file
 filtered_airports_df.to_csv(filtered_csv_file_path, index=False)
